@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <h1>Generate Formulas for Spatial Unit Delineation Workshop</h1>
+    <br /><br />
+    <label for="urls">Enter a comma separated list of Google Spreadsheet URLs.</label>
+    <br />
+    <textarea id="urls" name="Google spreadsheet URLs" rows="5" cols="200"></textarea>
+    <br /><br />
+
+    <label for="tab">Enter the name of the spreadsheet tab to pull the data from.</label>
+    <br />
+    <input id="tab" name="Spreadsheet tab name" />
+    <br /><br />
+
+    <label for="nameCell">Enter the cell where the person's name can be found.</label>
+    <br />
+    <input id="nameCell" name="Spreadsheet cell with the person's name" />
+    <br /><br />
+    
+    <label for="startingRow">Enter the row where the data actually starts (columns B, C, & D are assumed).</label>
+    <br />
+    <input id="startingRow" name="Row number where data starts" />
+    <br /><br />
+
+    <label for="endingRow">Enter the row where the data ends (columns B, C, & D are assumed).</label>
+    <br />
+    <input id="endingRow" name="Row number where data ends" />
+    <br /><br />
+
+    <button onclick="generate()">Generate Spreadsheet Formulas</button>
+
+    <br /><br />
+    <h1>Output</h1>
+    <br />
+    <div id="outputContainer"></div>
+
+
+    <script>
+        function generate() {
+            const urlsTextarea = document.getElementById('urls');
+            const urls = urlsTextarea.value;
+            const urlArray = urls.split(",");
+
+            const sheetTabInput = document.getElementById('tab');
+            const sheetTab = sheetTabInput.value;
+
+            const nameCellInput = document.getElementById('nameCell');
+            const nameCell = nameCellInput.value;
+
+            const startingRowInput = document.getElementById('startingRow');
+            const startingRowNum = Number(startingRowInput.value);
+
+            const endingRowInput = document.getElementById('endingRow');
+            const endingRowNum = Number(endingRowInput.value);
+
+            let column1 = '';
+            let column2 = '';
+            let column3 = '';
+            let column4 = '';
+
+            for (let i = 0; i < urlArray.length; i++) {
+                const removeIndex = urlArray[i].indexOf('/edit');
+                urlArray[i] = urlArray[i].substring(0, removeIndex);
+                for (let j = startingRowNum; j <= endingRowNum; j++) {
+                    column1 = `${column1}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!${nameCell}")\n`;
+                    column2 = `${column2}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$B$${j}")\n`;
+                    column3 = `${column3}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$C$${j}")\n`;
+                    column4 = `${column4}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$D$${j}")\n`;
+                } 
+            }
+
+            let output = `<h2>Column 1</h2><br /><pre>${column1}</pre><br /><br />`;
+            output = `${output}<h2>Column 2</h2><br /><pre>${column2}</pre><br /><br />`;
+            output = `${output}<h2>Column 3</h2><br /><pre>${column3}</pre><br /><br />`;
+            output = `${output}<h2>Column 4</h2><br /><pre>${column4}</pre><br /><br />`;
+
+            const outputContainer = document.getElementById('outputContainer');
+            outputContainer.innerHTML = output;
+        }
+    </script>
+</html>
