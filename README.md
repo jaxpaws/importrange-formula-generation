@@ -1,1 +1,2 @@
 # importrange-formula-generation
+Presents the user with multiple input fields that are used to construct Google Sheet formulas using the IMPORTRANGE function. User first enters the values, then clicks the "Generate Spreadsheet Formulas" button to generate the formulas. The generated formulas will be pasted on the page separated by column to ensure that formulas can be pasted without issue into the sheet.
