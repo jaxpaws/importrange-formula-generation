@@ -1,13 +1,29 @@
 <!DOCTYPE html>
 <html>
     <h1>Generate Formulas for Spatial Unit Delineation Workshop</h1>
-    <br /><br />
+    <br />
+    <p>
+        This page can help you import data from a collection of Google Sheets spreadsheets
+        that are all structured the exact same way into a master spreadsheet.
+    </p>
+    <p>
+        The URLs will determine which Google Sheets spreadsheets to pull data from,
+        and the tab and cell information provided will determine where in those spreadsheets
+        to pull data from.
+    </p>
+    <p>
+        Once you have generated the formulas, copy one column at a time using the buttons or
+        by manually selecting the text in the column, and paste it into the column in the
+        spreadsheet. Separating by column was done because Google Sheets cannot handle multiple
+        columns of formulas being pasted in at once.
+    </p>
+    <br />
     <label for="urls">Enter a comma separated list of Google Spreadsheet URLs.</label>
     <br />
     <textarea id="urls" name="Google spreadsheet URLs" rows="5" cols="200"></textarea>
     <br /><br />
 
-    <label for="tab">Enter the name of the spreadsheet tab to pull the data from.</label>
+    <label for="tab">Enter the name of the tab you are pulling data from.</label>
     <br />
     <input id="tab" name="Spreadsheet tab name" />
     <br /><br />
@@ -17,14 +33,14 @@
     <input id="nameCell" name="Spreadsheet cell with the person's name" />
     <br /><br />
     
-    <label for="startingRow">Enter the row where the data actually starts (columns B, C, & D are assumed).</label>
+    <label for="startCell">Enter the cell where the data starts (e.g., B6). [limitation: can only accept one letter, so 'AA' or similar is not accepted]</label>
     <br />
-    <input id="startingRow" name="Row number where data starts" />
+    <input id="startCell" name="Cell where data starts" />
     <br /><br />
 
-    <label for="endingRow">Enter the row where the data ends (columns B, C, & D are assumed).</label>
+    <label for="endCell">Enter the cell where the data ends (e.g., D12). [limitation: can only accept one letter, so 'AA' or similar is not accepted]</label>
     <br />
-    <input id="endingRow" name="Row number where data ends" />
+    <input id="endCell" name="Cell where data ends" />
     <br /><br />
 
     <button onclick="generate()">Generate Spreadsheet Formulas</button>
@@ -32,50 +48,116 @@
     <br /><br />
     <h1>Output</h1>
     <br />
+    <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
+    <div id="buttonContainer"></div>
+
+    <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
     <div id="outputContainer"></div>
 
+    
 
     <script>
         function generate() {
+            // Clear the button and output containers in the DOM so the old content is erased before adding new content
+            clearContainers();
+
+            // Get the list of spreadsheet URLs entered by the user
             const urlsTextarea = document.getElementById('urls');
             const urls = urlsTextarea.value;
             const urlArray = urls.split(",");
 
+            // Get the spreadsheet tab entered by the user
             const sheetTabInput = document.getElementById('tab');
             const sheetTab = sheetTabInput.value;
 
+            // Get the cell where the user indicated the name will be in the spreadsheet
             const nameCellInput = document.getElementById('nameCell');
             const nameCell = nameCellInput.value;
 
-            const startingRowInput = document.getElementById('startingRow');
-            const startingRowNum = Number(startingRowInput.value);
+            // Get the cell where the user indicated the data will start in the spreadsheet,
+            // and then break it down into useful variables
+            const startCellInput = document.getElementById('startCell');
+            const startCell = startCellInput.value.trim();
+            const startCol = startCell[0].toUpperCase();
+            const startColCode = Number(startCol.charCodeAt(0));
+            const startRow = Number(startCell.substring(1));
 
-            const endingRowInput = document.getElementById('endingRow');
-            const endingRowNum = Number(endingRowInput.value);
+            // Get the cell where the user indicated the data will start in the spreadsheet,
+            // and then break it down into useful variables
+            const endCellInput = document.getElementById('endCell');
+            const endCell = endCellInput.value.trim();
+            const endCol = endCell[0].toUpperCase();
+            const endColCode = Number(endCol.charCodeAt(0));
+            const endRow = Number(endCell.substring(1));
 
-            let column1 = '';
-            let column2 = '';
-            let column3 = '';
-            let column4 = '';
+            // Stores the output generated separated by column
+            let columns = [];
+            // Stores the actual HTML <button> tags
+            let buttonsHtml = '';
 
-            for (let i = 0; i < urlArray.length; i++) {
-                const removeIndex = urlArray[i].indexOf('/edit');
-                urlArray[i] = urlArray[i].substring(0, removeIndex);
-                for (let j = startingRowNum; j <= endingRowNum; j++) {
-                    column1 = `${column1}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!${nameCell}")\n`;
-                    column2 = `${column2}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$B$${j}")\n`;
-                    column3 = `${column3}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$C$${j}")\n`;
-                    column4 = `${column4}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$D$${j}")\n`;
-                } 
+            // Add the name column to the list of column outputs and to the list of copy buttons
+            columns.push('');
+            buttonsHtml = `${buttonsHtml}<button onclick="copyCol('nameCol')">Copy Name Column</button>&nbsp;`;
+            
+            // Add the data columns to the list of column outputs and to the list of copy buttons
+            for (let i = startColCode; i <= endColCode; i++) {
+                columns.push('');
+                const colLogicalNum = i - startColCode + 1;
+                buttonsHtml = `${buttonsHtml}<button onclick="copyCol('dataCol${colLogicalNum}')">Copy Data Column ${colLogicalNum}</button>&nbsp;`;
             }
 
-            let output = `<h2>Column 1</h2><br /><pre>${column1}</pre><br /><br />`;
-            output = `${output}<h2>Column 2</h2><br /><pre>${column2}</pre><br /><br />`;
-            output = `${output}<h2>Column 3</h2><br /><pre>${column3}</pre><br /><br />`;
-            output = `${output}<h2>Column 4</h2><br /><pre>${column4}</pre><br /><br />`;
+            // Put the list of HTML <button> tags into the DOM using the buttonContainer <div>
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = buttonsHtml;
 
+            // For each URL, go row by row and prepare the formula for each column in that row
+            for (let i = 0; i < urlArray.length; i++) {
+                const removeIndex = urlArray[i].indexOf('/edit');
+                urlArray[i] = urlArray[i].substring(0, removeIndex).trim();
+                for (let j = startRow; j <= endRow; j++) {
+                    columns[0] = `${columns[0]}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!${nameCell}")\n`
+                    for (let k = startColCode; k <= endColCode; k++) {
+                        columns[k - startColCode + 1] = `${columns[k - startColCode + 1]}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$${String.fromCharCode(k)}$${j}")\n`;
+                    }
+                }
+            }
+
+            // Consolidate all the column outputs into one string of HTML
+            let colOutputHtml = '';
+            colOutputHtml = `${colOutputHtml}${buildOutputContainer('nameCol', columns[0], `Name Column`)}`;
+            for (let i = 1; i < columns.length; i++) {
+                colOutputHtml = `${colOutputHtml}${buildOutputContainer(`dataCol${i}`, columns[i], `Data Column ${i}`)}`;
+            }
+
+            // Put the column outputs into the DOM using the outputContainer <div>
             const outputContainer = document.getElementById('outputContainer');
-            outputContainer.innerHTML = output;
+            outputContainer.innerHTML = colOutputHtml;
+        }
+
+        // Prepare the HTML header and text for a column
+        function buildOutputContainer(colTextId, colText, colTitle) {
+            return `<h2>${colTitle}</h2><div style="border: 1px solid black">`
+                + `<pre id="${colTextId}">${colText}</pre></div><br /><br />`;
+        }
+
+        // Clear any elements inside the outputContainer and buttonContainer in the DOM
+        function clearContainers() {
+            const outputContainer = document.getElementById('outputContainer');
+            outputContainer.innerHTML = '';
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = '';
+        }
+
+        // Copy the text in the column that matches the passed colId to the user's clipboard
+        const copyCol = async (colId) => {
+            try {
+                const column = document.getElementById(colId);
+                await navigator.clipboard.writeText(column.innerText);
+                alert(`Column ${colId} successfully copied to clipboard! :)`);
+            } catch (err) {
+                alert('Copy failed! :(')
+                console.error('Failed to copy: ', err);
+            }
         }
     </script>
 </html>
