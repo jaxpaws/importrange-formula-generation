@@ -1,94 +1,219 @@
 <!DOCTYPE html>
 <html>
-    <h1>Generate Google Sheets IMPORTRANGE Formulas</h1>
-    <br />
-    <p>
-        This page can help you import data from a collection of Google Sheets spreadsheets
-        that are all structured the exact same way into a master spreadsheet.
-    </p>
-    <p>
-        The URLs will determine which Google Sheets spreadsheets to pull data from,
-        and the tab and cell information provided will determine where in those spreadsheets
-        to pull data from.
-    </p>
-    <p>
-        Once you have generated the formulas, copy one column at a time using the buttons or
-        by manually selecting the text in the column, and paste it into the column in the
-        spreadsheet. Separating by column was done because Google Sheets cannot handle multiple
-        columns of formulas being pasted in at once.
-    </p>
-    <br />
-    <label for="urls">Enter a comma separated list of Google Spreadsheet URLs.</label>
-    <br />
-    <textarea id="urls" name="Google spreadsheet URLs" rows="5" cols="200"></textarea>
-    <br /><br />
+    <main>
+        <h1>Generate Google Sheets IMPORTRANGE Formulas</h1>
+        <br />
+        <section id="page-intro-section">
+            <p>
+                This page can help you import data from a collection of Google Sheets spreadsheets
+                that are all structured the exact same way into a master spreadsheet.
+            </p>
+            <p>
+                The URLs will determine which Google Sheets spreadsheets to pull data from,
+                and the tab and cell information provided will determine where in those spreadsheets
+                to pull data from.
+            </p>
+            <p>
+                Once you have generated the formulas, copy one column at a time using the buttons or
+                by manually selecting the text in the column, and paste it into the column in the
+                spreadsheet. Separating by column was done because Google Sheets cannot handle multiple
+                columns of formulas being pasted in at once.
+            </p>
+            <br />
+        </section>
+        <section id="fields-section">
+            <div class="form-layout">
+                <div id="error-container"></div>
 
-    <label for="tab">Enter the name of the tab you are pulling data from.</label>
-    <br />
-    <input id="tab" name="Spreadsheet tab name" />
-    <br /><br />
+                <div class="input-container" style="width:100%">
+                    <label for="urls"><strong>Spreadsheet URLs</strong></label>
+                    <span class="input-desc">Enter a comma separated list of Google Spreadsheet URLs.</span>
+                    <div id="url-error-container" class="error-container"></div>
+                    <textarea id="urls" name="Google spreadsheet URLs" rows="5" onfocusout="verifyNotEmpty(value, 'urls')"></textarea>
+                </div>
 
-    <label for="nameCell">Enter the cell where the person's name can be found.</label>
-    <br />
-    <input id="nameCell" name="Spreadsheet cell with the person's name" />
-    <br /><br />
-    
-    <label for="startCell">Enter the cell where the data starts (e.g., B6). [limitation: can only accept one letter, so 'AA' or similar is not accepted]</label>
-    <br />
-    <input id="startCell" name="Cell where data starts" />
-    <br /><br />
+                <div class="input-container">
+                    <label for="tab"><strong>Spreadsheet Tab/Sheet</strong></label>
+                    <span class="input-desc">Enter the name of the tab/sheet within the spreadsheet you are pulling data from.</span>
+                    <div id="tab-error-container" class="error-container"></div>
+                    <input id="tab" name="Spreadsheet tab name" onfocusout="verifyNotEmpty(value, 'tab')" />
+                </div>
 
-    <label for="endCell">Enter the cell where the data ends (e.g., D12). [limitation: can only accept one letter, so 'AA' or similar is not accepted]</label>
-    <br />
-    <input id="endCell" name="Cell where data ends" />
-    <br /><br />
+                <div class="input-container">
+                    <label for="nameCell"><strong>Name Cell</strong></label>
+                    <span class="input-desc">Enter the cell where the person's name can be found.</span>
+                    <div id="nameCell-error-container" class="error-container"></div>
+                    <input id="nameCell" name="Spreadsheet cell with the person's name" onfocusout="verifyNotEmpty(value, 'nameCell')" />
+                </div>
+                
+                <div class="input-container">
+                    <label for="startCell"><strong>Start Cell</strong></label>
+                    <span class="input-desc">Enter the cell where the data starts (e.g., J6).</span>
+                    <div id="startCell-error-container" class="error-container"></div>
+                    <input id="startCell" name="Cell where data starts" onfocusout="verifyNotEmpty(value, 'startCell')" />
+                </div>
 
-    <button onclick="generate()">Generate Spreadsheet Formulas</button>
+                <div class="input-container">
+                    <label for="endCell"><strong>End Cell</strong></label>
+                    <span class="input-desc">Enter the cell where the data ends (e.g., AB12).</span>
+                    <div id="endCell-error-container" class="error-container"></div>
+                    <input id="endCell" name="Cell where data ends" onfocusout="verifyNotEmpty(value, 'endCell')" />
+                </div>
 
-    <br /><br />
-    <h1>Output</h1>
-    <br />
-    <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
-    <div id="buttonContainer"></div>
+                <div id="button-container"></div>
+            </div>
+        </section>
+        <section id="output-section">
+            <h1>Output</h1>
+            <br />
+            <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
+            <div id="buttonContainer"></div>
 
-    <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
-    <div id="outputContainer"></div>
+            <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
+            <div id="outputContainer"></div>
+        </section>
+    </main>
 
-    
+    <style>
+        main {margin:2rem;}
+        /* label {display:block; margin-bottom:-0.7rem;} */
+        main {font-family:Verdana, Geneva, Tahoma, sans-serif}
+        p {line-height:1.5}
+        button {
+            font-size: 17px;
+            padding:0.75rem 1.5rem;
+            background-color: cadetblue;
+            border-radius: 10px;
+            border: none;
+            color: white;
+            letter-spacing: 0.1rem;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: aliceblue;
+            color: black;
+            cursor: pointer;
+        }
+        #urls {width:100%;}
+        .error {color:red; display:inline; font-size: 14px;}
+        .error-container { display: flex; align-items: center;}
+        .dot {
+            height: 30px;
+            width: 30px;
+            background-color: red;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .cross {
+            position: absolute;
+            color: white;
+            margin-left: 7.5px;
+            margin-bottom: 6px;
+            font-size: 1.5rem;
+        }
+        textarea {
+            border-radius: 15px;
+            border: black solid 1px;
+            line-height: 1.5;
+            padding: 10px;
+            font-size: 15px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            box-sizing: border-box;
+        }
+        input {
+            border-radius: 8px;
+            border: black solid 1px;
+            padding: 8px;
+            font-size: 15px;
+        }
+        .invalid {
+            border-color: red;
+            background-color: rgba(255, 0, 0, 0.1);
+        }
+        .input-container {
+            flex-direction: column;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .input-desc {line-height: 1.5;}
+        .form-layout {
+            flex-direction: column;
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+        }
+        #buttonContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+            grid-gap: 10px;
+        }
+        .output-container {
+            border-radius: 15px;
+            background: aliceblue;
+            padding: 5px 15px;
+            box-shadow: 12px 12px 2px 1px rgb(0 0 255 / 0.2);
+        }
+    </style>
 
     <script>
+        const errorIds = new Map();
+        errorIds.set('urls', 'url-error-container');
+        errorIds.set('tab', 'tab-error-container');
+        errorIds.set('nameCell', 'nameCell-error-container');
+        errorIds.set('startCell', 'startCell-error-container');
+        errorIds.set('endCell', 'endCell-error-container');
+        const errorMsgs = new Map();
+        errorMsgs.set('urls', 'Please enter spreadsheet URLs');
+        errorMsgs.set('tab', 'Please enter the name of the tab');
+        errorMsgs.set('nameCell', 'Please enter the name cell');
+        errorMsgs.set('startCell', 'Please enter the data start cell');
+        errorMsgs.set('endCell', 'Please enter the data end cell');
+        const incompleteFields = new Map();
+        incompleteFields.set('urls', 'untouched');
+        incompleteFields.set('tab', 'untouched');
+        incompleteFields.set('nameCell', 'untouched');
+        incompleteFields.set('startCell', 'untouched');
+        incompleteFields.set('endCell', 'untouched');
+
         function generate() {
             // Clear the button and output containers in the DOM so the old content is erased before adding new content
             clearContainers();
 
+            let errors = [];
+
             // Get the list of spreadsheet URLs entered by the user
-            const urlsTextarea = document.getElementById('urls');
-            const urls = urlsTextarea.value;
-            const urlArray = urls.split(",");
+            const urlArray = document.getElementById('urls').value.split(',');
 
             // Get the spreadsheet tab entered by the user
-            const sheetTabInput = document.getElementById('tab');
-            const sheetTab = sheetTabInput.value;
+            const sheetTab = document.getElementById('tab').value;
 
             // Get the cell where the user indicated the name will be in the spreadsheet
-            const nameCellInput = document.getElementById('nameCell');
-            const nameCell = nameCellInput.value;
+            const nameCell = document.getElementById('nameCell').value;
 
-            // Get the cell where the user indicated the data will start in the spreadsheet,
-            // and then break it down into useful variables
-            const startCellInput = document.getElementById('startCell');
-            const startCell = startCellInput.value.trim();
-            const startCol = startCell[0].toUpperCase();
-            const startColCode = Number(startCol.charCodeAt(0));
-            const startRow = Number(startCell.substring(1));
+            // Get the cell where the user indicated the data will start in the spreadsheet
+            const startCell = document.getElementById('startCell').value.trim();
 
-            // Get the cell where the user indicated the data will start in the spreadsheet,
-            // and then break it down into useful variables
-            const endCellInput = document.getElementById('endCell');
-            const endCell = endCellInput.value.trim();
-            const endCol = endCell[0].toUpperCase();
-            const endColCode = Number(endCol.charCodeAt(0));
-            const endRow = Number(endCell.substring(1));
+            // Get the cell where the user indicated the data will start in the spreadsheet
+            const endCell = document.getElementById('endCell').value.trim();
+
+            // Break the start cell down into column and row
+            const startRowIndex = startCell.search(/\d/);
+            const startCol = startCell.substring(0, startRowIndex).toUpperCase();
+            const startColNum = getColumnNum(startCol);
+            console.log(`startColNum=${startColNum}`);
+            const startColCodes = [];
+            for (let i = startCol.length - 1; i >= 0; i--) {
+                startColCodes.push(Number(startCol.charCodeAt(i)));
+            }
+            const startRow = Number(startCell.substring(startRowIndex));
+
+            // Break the end cell down into column and row
+            const endRowIndex = endCell.search(/\d/);
+            const endCol = endCell.substring(0, endRowIndex).toUpperCase();
+            const endColNum = getColumnNum(endCol);
+            console.log(`endColNum=${endColNum}`);
+            const endRow = Number(endCell.substring(endRowIndex));
 
             // Stores the output generated separated by column
             let columns = [];
@@ -97,13 +222,13 @@
 
             // Add the name column to the list of column outputs and to the list of copy buttons
             columns.push('');
-            buttonsHtml = `${buttonsHtml}<button onclick="copyCol('nameCol')">Copy Name Column</button>&nbsp;`;
+            buttonsHtml = `${buttonsHtml}<button onclick="copyCol('nameCol')">Copy Name Column</button>`;
             
             // Add the data columns to the list of column outputs and to the list of copy buttons
-            for (let i = startColCode; i <= endColCode; i++) {
+            for (let i = startColNum; i <= endColNum; i++) {
                 columns.push('');
-                const colLogicalNum = i - startColCode + 1;
-                buttonsHtml = `${buttonsHtml}<button onclick="copyCol('dataCol${colLogicalNum}')">Copy Data Column ${colLogicalNum}</button>&nbsp;`;
+                const colLogicalNum = i - startColNum + 1;
+                buttonsHtml = `${buttonsHtml}<button onclick="copyCol('dataCol${colLogicalNum}')">Copy Data Column ${colLogicalNum}</button>`;
             }
 
             // Put the list of HTML <button> tags into the DOM using the buttonContainer <div>
@@ -111,13 +236,47 @@
             buttonContainer.innerHTML = buttonsHtml;
 
             // For each URL, go row by row and prepare the formula for each column in that row
+            let currentColContent = '';
+            const upperCaseZCharCode = 'Z'.charCodeAt(0);
+            const upperCaseACharCode = 'A'.charCodeAt(0);
+            let currentColCodes = [];
+            for (let i = startCol.length - 1; i >= 0; i--) {
+                currentColCodes.push(Number(startCol.charCodeAt(i)));
+            }
             for (let i = 0; i < urlArray.length; i++) {
                 const removeIndex = urlArray[i].indexOf('/edit');
                 urlArray[i] = urlArray[i].substring(0, removeIndex).trim();
                 for (let j = startRow; j <= endRow; j++) {
-                    columns[0] = `${columns[0]}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!${nameCell}")\n`
-                    for (let k = startColCode; k <= endColCode; k++) {
-                        columns[k - startColCode + 1] = `${columns[k - startColCode + 1]}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$${String.fromCharCode(k)}$${j}")\n`;
+                    currentColCodes = JSON.parse(JSON.stringify(startColCodes));
+                    columns[0] = `${columns[0]}=IMPORTRANGE("${urlArray[i]}","${sheetTab}!${nameCell}")\n`;
+                    for (let k = startColNum; k <= endColNum; k++) {
+                        currentColContent = `=IMPORTRANGE("${urlArray[i]}","${sheetTab}!$`;
+                        for (let l = currentColCodes.length - 1; l >= 0; l--) {
+                            currentColContent = `${currentColContent}${String.fromCharCode(currentColCodes[l])}`;
+                        }
+                        currentColContent = `${currentColContent}$${j}")\n`;
+                        columns[k - startColNum + 1] = `${columns[k - startColNum + 1]}${currentColContent}`;
+                        if (currentColCodes[0] < upperCaseZCharCode) {
+                            currentColCodes[0] += 1;
+                        } else if (currentColCodes.length === 1 && currentColCodes.length < endCol.length && currentColCodes[0] === upperCaseZCharCode) {
+                            console.log(`currentColCodes.length === 1 & we need to add a letter to the column`);
+                            currentColCodes[0] = upperCaseACharCode;
+                            currentColCodes.push(upperCaseACharCode);
+                        } else if (currentColCodes.length > 1 && currentColCodes[1] < upperCaseZCharCode) {
+                            currentColCodes[0] = upperCaseACharCode;
+                            currentColCodes[1] += 1;
+                        } else if (currentColCodes.length === 2 && currentColCodes.length < endCol.length
+                            && currentColCodes[0] === upperCaseZCharCode && currentColCodes[1] === upperCaseZCharCode) {
+                                console.log(`currentColCodes.length === 2 & we need to add a letter to the column`);
+                            currentColCodes[0] = upperCaseACharCode;
+                            currentColCodes[1] = upperCaseACharCode;
+                            currentColCodes.push(upperCaseACharCode);
+                        } else if (currentColCodes.length > 2 && currentColCodes[2] < upperCaseZCharCode) {
+                            currentColCodes[1] = upperCaseACharCode;
+                            currentColCodes[2] += 1;
+                        } else {
+                            console.log('Error: Unable to increment column any further.')
+                        }
                     }
                 }
             }
@@ -136,7 +295,7 @@
 
         // Prepare the HTML header and text for a column
         function buildOutputContainer(colTextId, colText, colTitle) {
-            return `<h2>${colTitle}</h2><div style="border: 1px solid black">`
+            return `<h2>${colTitle}</h2><div class="output-container">`
                 + `<pre id="${colTextId}">${colText}</pre></div><br /><br />`;
         }
 
@@ -158,6 +317,40 @@
                 alert('Copy failed! :(')
                 console.error('Failed to copy: ', err);
             }
+        }
+
+        function isEmpty(val) {
+            return val.trim() === '';
+        }
+
+        function verifyNotEmpty(value, inputId) {
+            let errorContainer = document.getElementById(errorIds.get(inputId));
+            let input = document.getElementById(inputId);
+            let generateButton = document.getElementById('button-container');
+            if (isEmpty(value)) {
+                errorContainer.innerHTML = `<span class="dot"></span><span class="cross">x</span>&nbsp;&nbsp;<strong tabindex="0" class="error">${errorMsgs.get(inputId)}</strong>`;
+                input.setAttribute('class', 'invalid');
+                incompleteFields.set(inputId, 'error');
+                generateButton.innerHTML = '';
+            } else {
+                errorContainer.innerHTML = '';
+                input.setAttribute('class', '');
+                incompleteFields.delete(inputId);
+                if (incompleteFields.size === 0) {
+                    generateButton.innerHTML = `<button onclick="generate()">Generate Spreadsheet Formulas</button>`;
+                }
+            }
+        }
+
+        function getColumnNum(columnLetterCombo) {
+            let num = 0;
+            let exponent = columnLetterCombo.length - 1;
+            for (let i = 0; i < columnLetterCombo.length; i++) {
+                num += (columnLetterCombo.charCodeAt(i) - 64) * (26 ** exponent);
+                console.log(`columnLetterCombo=${columnLetterCombo} & num=${num}`);
+                exponent -= 1;
+            }
+            return num;
         }
     </script>
 </html>
