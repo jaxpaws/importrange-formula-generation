@@ -197,6 +197,9 @@
             padding: 5px 15px;
             box-shadow: 12px 12px 2px 1px rgb(0 0 255 / 0.2);
         }
+        button.clicked {
+            background-color: lightslategray;
+        }
     </style>
 
     <script>
@@ -214,11 +217,7 @@
             let errors = [];
 
             // Get the list of spreadsheet URLs entered by the user
-            const urlArray = document.getElementById('urls').value.split(',');
-            for (let i = 0; i < urlArray.length; i++) {
-                const removeIndex = urlArray[i].indexOf('/edit');
-                urlArray[i] = urlArray[i].substring(0, removeIndex).trim();
-            }
+            const urlArray = formatUrls(document.getElementById('urls').value.split(','));
 
             // Get the number of threats in the threats assessment (corresponds to number of tabs in spreadsheet)
             const numThreats = document.getElementById('threats').value;
@@ -230,15 +229,14 @@
             const numRounds = Number(document.getElementById('rounds').value);
 
             // Get the cell ranges for the likelihood of occurrence and level of impact for each round
-            let occurrenceCells = { cellColByRound: [], cellRowStartByRound: [], cellRowEndByRound: [] }
-            let impactCells = { cellColByRound: [], cellRowStartByRound: [], cellRowEndByRound: [] }
+            let occurrenceCells = { cellColByRound: [], cellRowStartByRound: [], cellRowEndByRound: [] };
+            let impactCells = { cellColByRound: [], cellRowStartByRound: [], cellRowEndByRound: [] };
             let occurrenceCellRange = [];
             let impactCellRange = [];
             let startRowIndex;
             let endRowIndex;
             for (let i = 1; i <= numRounds; i++) {
                 occurrenceCellRange = document.getElementById(`round${i}OccurRange`).value.split(':');
-                console.log(`occurrenceCellRange=${occurrenceCellRange}`);
                 startRowIndex = occurrenceCellRange[0].search(/\d/);
                 endRowIndex = occurrenceCellRange[1].search(/\d/);
                 occurrenceCells.cellColByRound.push(occurrenceCellRange[0].substring(0, startRowIndex).toUpperCase());
@@ -246,15 +244,12 @@
                 occurrenceCells.cellRowEndByRound.push(Number(occurrenceCellRange[1].substring(endRowIndex)));
 
                 impactCellRange = document.getElementById(`round${i}ImpactRange`).value.split(':');
-                console.log(`impactCellRange=${impactCellRange}`);
                 startRowIndex = impactCellRange[0].search(/\d/);
                 endRowIndex = impactCellRange[1].search(/\d/);
                 impactCells.cellColByRound.push(impactCellRange[0].substring(0, startRowIndex).toUpperCase());
                 impactCells.cellRowStartByRound.push(Number(impactCellRange[0].substring(startRowIndex)));
                 impactCells.cellRowEndByRound.push(Number(impactCellRange[1].substring(endRowIndex)));
             }
-            console.log(occurrenceCells);
-            console.log(impactCells);
 
             // Get the cell where the user indicated the causal certainty can be found in the spreadsheet
             // & the number of answer options available
@@ -300,7 +295,7 @@
                 // Add the name column to the list of column outputs and to the list of copy buttons
                 columns.push('');
                 buttonsHtml = `${buttonsHtml}<h3>THREAT ${i}</h3><br /><div class="button-container">`;
-                buttonsHtml = `${buttonsHtml}<button onclick="copyCol('nameColT${i}')">Copy Name Column</button>`;
+                buttonsHtml = `${buttonsHtml}<button id="nameColT${i}CopyBtn" onclick="copyCol('nameColT${i}')">Copy Name Column</button>`;
                 columnTextIds.push(`nameColT${i}`);
                 
                 for (let j = 0; j < numRounds; j++) {
@@ -309,7 +304,7 @@
                     for (let k = occurrenceCells.cellRowStartByRound[j]; k <= occurrenceCells.cellRowEndByRound[j]; k++) {
                         columns.push('');
                         const colLogicalNum = k - occurrenceCells.cellRowStartByRound[j] + 1;
-                        buttonsHtml = `${buttonsHtml}<button onclick="copyCol('occurCol${colLogicalNum}T${i}R${j + 1}')">Copy R${j + 1} Occurrence Column ${colLogicalNum}</button>`;
+                        buttonsHtml = `${buttonsHtml}<button id="occurCol${colLogicalNum}T${i}R${j + 1}CopyBtn" onclick="copyCol('occurCol${colLogicalNum}T${i}R${j + 1}')">Copy R${j + 1} Occurrence Column ${colLogicalNum}</button>`;
                         columnTextIds.push(`occurCol${colLogicalNum}T${i}R${j + 1}`);
                     }
                     console.log(`occurrenceStart=${impactCells.cellRowStartByRound[j]} occurrenceEnd=${impactCells.cellRowEndByRound[j]}`);
@@ -317,7 +312,7 @@
                     for (let k = impactCells.cellRowStartByRound[j]; k <= impactCells.cellRowEndByRound[j]; k++) {
                         columns.push('');
                         const colLogicalNum = k - impactCells.cellRowStartByRound[j] + 1;
-                        buttonsHtml = `${buttonsHtml}<button onclick="copyCol('impactCol${colLogicalNum}T${i}R${j + 1}')">Copy R${j + 1} Impact Column ${colLogicalNum}</button>`;
+                        buttonsHtml = `${buttonsHtml}<button id="impactCol${colLogicalNum}T${i}R${j + 1}CopyBtn" onclick="copyCol('impactCol${colLogicalNum}T${i}R${j + 1}')">Copy R${j + 1} Impact Column ${colLogicalNum}</button>`;
                         columnTextIds.push(`impactCol${colLogicalNum}T${i}R${j + 1}`);
                     }
                 }
@@ -326,14 +321,14 @@
                 for (let j = 0; j < causalCertaintyAnsOptions.length; j++) {
                     columns.push('');
                     const colLogicalNum = j + 1;
-                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('causCertCol${colLogicalNum}T${i}')">Copy Causal Certainty Column ${colLogicalNum}</button>`;
+                    buttonsHtml = `${buttonsHtml}<button id="causCertCol${colLogicalNum}T${i}CopyBtn" onclick="copyCol('causCertCol${colLogicalNum}T${i}')">Copy Causal Certainty Column ${colLogicalNum}</button>`;
                     columnTextIds.push(`causCertCol${colLogicalNum}T${i}`);
                 }
 
                 for (let j = occurrenceTimeframeRowStart; j <= occurrenceTimeframeRowEnd; j++) {
                     columns.push('');
                     const colLogicalNum = j - occurrenceTimeframeRowStart + 1;
-                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('occurTimeframeCol${colLogicalNum}T${i}')">Copy Occurrence Timeframe Column ${colLogicalNum}</button>`;
+                    buttonsHtml = `${buttonsHtml}<button id="occurTimeframeCol${colLogicalNum}T${i}CopyBtn" onclick="copyCol('occurTimeframeCol${colLogicalNum}T${i}')">Copy Occurrence Timeframe Column ${colLogicalNum}</button>`;
                     columnTextIds.push(`occurTimeframeCol${colLogicalNum}T${i}`);
                 }
 
@@ -341,7 +336,7 @@
                 for (let j = 0; j < threatFreqAnsOptions.length; j++) {
                     columns.push('');
                     const colLogicalNum = j + 1;
-                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('threatFreqCol${colLogicalNum}T${i}')">Copy Threat Frequency Column ${colLogicalNum}</button>`;
+                    buttonsHtml = `${buttonsHtml}<button id="threatFreqCol${colLogicalNum}T${i}CopyBtn" onclick="copyCol('threatFreqCol${colLogicalNum}T${i}')">Copy Threat Frequency Column ${colLogicalNum}</button>`;
                     columnTextIds.push(`threatFreqCol${colLogicalNum}T${i}`);
                 }
 
@@ -349,7 +344,7 @@
                 for (let j = 0; j < threatExtentAnsOptions.length; j++) {
                     columns.push('');
                     const colLogicalNum = j + 1;
-                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('threatExtCol${colLogicalNum}T${i}')">Copy Threat Extent Column ${colLogicalNum}</button>`;
+                    buttonsHtml = `${buttonsHtml}<button id="threatExtCol${colLogicalNum}T${i}CopyBtn" onclick="copyCol('threatExtCol${colLogicalNum}T${i}')">Copy Threat Extent Column ${colLogicalNum}</button>`;
                     columnTextIds.push(`threatExtCol${colLogicalNum}T${i}`);
                 }
                 buttonsHtml = `${buttonsHtml}</div>`;
@@ -482,6 +477,7 @@
         // Copy the text in the column that matches the passed colId to the user's clipboard
         const copyCol = async (colId) => {
             try {
+                document.getElementById(`${colId}CopyBtn`).setAttribute('class', 'clicked');
                 const column = document.getElementById(colId);
                 await navigator.clipboard.writeText(column.innerText);
                 // alert(`Column ${colId} successfully copied to clipboard! :)`);
@@ -561,6 +557,14 @@
                 exponent -= 1;
             }
             return num;
+        }
+
+        function formatUrls(urls) {
+            for (let i = 0; i < urls.length; i++) {
+                const removeIndex = urls[i].indexOf('/edit');
+                urls[i] = urls[i].substring(0, removeIndex).trim();
+            }
+            return urls;
         }
 
         function fillErrorIds() {
