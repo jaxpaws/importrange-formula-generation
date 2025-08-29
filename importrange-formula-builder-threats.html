@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+    <main>
+        <h1>Generate Google Sheets IMPORTRANGE Formulas - Threats</h1>
+        <br />
+        <section id="page-intro-section">
+            <p>
+                This page can help you import data from a collection of Google Sheets spreadsheets
+                that are all structured the exact same way into a master spreadsheet.
+            </p>
+            <p>
+                The URLs will determine which Google Sheets spreadsheets to pull data from,
+                and the tab and cell information provided will determine where in those spreadsheets
+                to pull data from.
+            </p>
+            <p>
+                Once you have generated the formulas, copy one column at a time using the buttons or
+                by manually selecting the text in the column, and paste it into the column in the
+                spreadsheet. Separating by column was done because Google Sheets cannot handle multiple
+                columns of formulas being pasted in at once.
+            </p>
+            <br />
+        </section>
+        <section id="fields-section">
+            <div class="form-layout">
+                <div id="error-container"></div>
+
+                <div class="input-container" style="width:100%">
+                    <label for="urls"><strong>Spreadsheet URLs</strong></label>
+                    <span class="input-desc">Enter a comma separated list of Google Spreadsheet URLs.</span>
+                    <div id="url-error-container" class="error-container"></div>
+                    <textarea id="urls" name="Google spreadsheet URLs" rows="5" onfocusout="verifyNotEmpty(value, 'urls')"></textarea>
+                </div>
+
+                <div class="input-container">
+                    <label for="threats"><strong>Number of Threats</strong></label>
+                    <span class="input-desc">There should be a spreadsheet tab for each threat labeled as "Threat 1", "Threat 2", etc.</span>
+                    <div id="threats-error-container" class="error-container"></div>
+                    <input id="threats" name="Number of threats" onfocusout="verifyNotEmpty(value, 'threats')" />
+                </div>
+
+                <div class="input-container">
+                    <label for="nameCell"><strong>Name Cell</strong></label>
+                    <span class="input-desc">Enter the cell where the person's name can be found.</span>
+                    <div id="nameCell-error-container" class="error-container"></div>
+                    <input id="nameCell" name="Spreadsheet cell with the person's name" onfocusout="verifyNotEmpty(value, 'nameCell')" />
+                </div>
+
+                <div class="input-container">
+                    <label for="rounds"><strong>Number of Rounds</strong></label>
+                    <span class="input-desc">Please enter the number of rounds of scoring you will conduct for each threat.</span>
+                    <div id="rounds-error-container" class="error-container"></div>
+                    <input id="rounds" name="Number of rounds" type="number" onfocusout="showRounds(value, 'rounds')" />
+                </div>
+
+                <div id="roundsDataContainer"></div>
+
+                <div class="input-container">
+                    <label for="causalCertaintyCell"><strong>Causal Certainty Cell</strong></label>
+                    <span class="input-desc">Enter the cell where the causal certainty score is recorded.</span>
+                    <div id="causalCertaintyCell-error-container" class="error-container"></div>
+                    <input id="causalCertaintyCell" name="Causal certainty cell" onfocusout="verifyNotEmpty(value, 'causalCertaintyCell')" />
+                </div>
+
+                <div class="input-container" style="width:100%">
+                    <label for="causalCertaintyAnsOptions"><strong>Causal Certainty Answer Options</strong></label>
+                    <span class="input-desc">Enter the answer options for causal certainty separated by commas.</span>
+                    <div id="causalCertaintyAnsOptions-error-container" class="error-container"></div>
+                    <textarea id="causalCertaintyAnsOptions" name="Causal certainty answer options" rows="3" onfocusout="verifyNotEmpty(value, 'causalCertaintyAnsOptions')"></textarea>
+                </div>
+
+                <div class="input-container">
+                    <label for="occTimeframeRange"><strong>Occurrence Timeframe Range of Cells</strong></label>
+                    <span class="input-desc">Enter the range of cell with the occurrence timeframe scores (e.g., C13:C15).</span>
+                    <div id="occTimeframeRange-error-container" class="error-container"></div>
+                    <input id="occTimeframeRange" name="Range of cells of occurrence timeframe" onfocusout="verifyNotEmpty(value, 'occTimeframeRange')" />
+                </div>
+
+                <div class="input-container">
+                    <label for="threatFreqCell"><strong>Threat Frequency Cell</strong></label>
+                    <span class="input-desc">Enter the cell where the threat frequency score is recorded.</span>
+                    <div id="threatFreqCell-error-container" class="error-container"></div>
+                    <input id="threatFreqCell" name="Threat frequency cell" onfocusout="verifyNotEmpty(value, 'threatFreqCell')" />
+                </div>
+
+                <div class="input-container" style="width:100%">
+                    <label for="threatFreqAnsOptions"><strong>Threat Frequency Answer Options</strong></label>
+                    <span class="input-desc">Enter the answer options for threat frequency separated by commas.</span>
+                    <div id="threatFreqAnsOptions-error-container" class="error-container"></div>
+                    <textarea id="threatFreqAnsOptions" class="bigInputs" name="Threat frequency answer options" rows="3" onfocusout="verifyNotEmpty(value, 'threatFreqAnsOptions')"></textarea>
+                </div>
+
+                <div class="input-container">
+                    <label for="threatExtentCell"><strong>Threat Extent Cell</strong></label>
+                    <span class="input-desc">Enter the cell where the data starts (e.g., J6).</span>
+                    <div id="threatExtentCell-error-container" class="error-container"></div>
+                    <input id="threatExtentCell" name="Threat extent cell" onfocusout="verifyNotEmpty(value, 'threatExtentCell')" />
+                </div>
+
+                <div class="input-container" style="width:100%">
+                    <label for="threatExtentAnsOptions"><strong>Threat Extent Answer Options</strong></label>
+                    <span class="input-desc">Enter the answer options for threat extent separated by commas.</span>
+                    <div id="threatExtentAnsOptions-error-container" class="error-container"></div>
+                    <textarea id="threatExtentAnsOptions" class="bigInputs" name="Threat extent answer options" rows="3" onfocusout="verifyNotEmpty(value, 'threatExtentAnsOptions')"></textarea>
+                </div>
+
+                <div id="button-container"></div>
+            </div>
+        </section>
+        <section id="output-section">
+            <h1>Output</h1>
+            <br />
+            <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
+            <div id="buttonContainer"></div>
+
+            <!-- Left intentionally blank because the content will be handled dynamically upon generating the content -->
+            <div id="outputContainer"></div>
+        </section>
+    </main>
+
+    <style>
+        main {margin:2rem;}
+        main {font-family:Verdana, Geneva, Tahoma, sans-serif}
+        p {line-height:1.5}
+        button {
+            font-size: 17px;
+            padding:0.75rem 1.5rem;
+            background-color: cadetblue;
+            border-radius: 10px;
+            border: none;
+            color: white;
+            letter-spacing: 0.1rem;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: aliceblue;
+            color: black;
+            cursor: pointer;
+        }
+        #urls, #causalCertaintyAnsOptions, #threatFreqAnsOptions, #threatExtentAnsOptions {width:100%;}
+        .error {color:red; display:inline; font-size: 14px;}
+        .error-container { display: flex; align-items: center;}
+        .dot {
+            height: 30px;
+            width: 30px;
+            background-color: red;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .cross {
+            position: absolute;
+            color: white;
+            margin-left: 7.5px;
+            margin-bottom: 6px;
+            font-size: 1.5rem;
+        }
+        textarea {
+            border-radius: 15px;
+            border: black solid 1px;
+            line-height: 1.5;
+            padding: 10px;
+            font-size: 15px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            box-sizing: border-box;
+        }
+        input {
+            border-radius: 8px;
+            border: black solid 1px;
+            padding: 8px;
+            font-size: 15px;
+        }
+        .invalid {
+            border-color: red;
+            background-color: rgba(255, 0, 0, 0.1);
+        }
+        .input-container {
+            flex-direction: column;
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        .input-desc {line-height: 1.5;}
+        .form-layout {
+            flex-direction: column;
+            display: flex;
+            align-items: flex-start;
+            gap: 25px;
+        }
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+            grid-gap: 10px;
+        }
+        .output-container {
+            border-radius: 15px;
+            background: aliceblue;
+            padding: 5px 15px;
+            box-shadow: 12px 12px 2px 1px rgb(0 0 255 / 0.2);
+        }
+    </style>
+
+    <script>
+        const errorIds = new Map();
+        fillErrorIds();
+        const errorMsgs = new Map();
+        fillErrorMsgs();
+        const incompleteFields = new Map();
+        fillIncompleteFields();
+
+        function generate() {
+            // Clear the button and output containers in the DOM so the old content is erased before adding new content
+            clearContainers();
+
+            let errors = [];
+
+            // Get the list of spreadsheet URLs entered by the user
+            const urlArray = document.getElementById('urls').value.split(',');
+            for (let i = 0; i < urlArray.length; i++) {
+                const removeIndex = urlArray[i].indexOf('/edit');
+                urlArray[i] = urlArray[i].substring(0, removeIndex).trim();
+            }
+
+            // Get the number of threats in the threats assessment (corresponds to number of tabs in spreadsheet)
+            const numThreats = document.getElementById('threats').value;
+
+            // Get the cell where the user indicated the name will be in the spreadsheet
+            const nameCell = document.getElementById('nameCell').value;
+
+            // Get the number of rounds of scoring for each threat
+            const numRounds = Number(document.getElementById('rounds').value);
+
+            // Get the cell ranges for the likelihood of occurrence and level of impact for each round
+            let occurrenceCells = { cellColByRound: [], cellRowStartByRound: [], cellRowEndByRound: [] }
+            let impactCells = { cellColByRound: [], cellRowStartByRound: [], cellRowEndByRound: [] }
+            let occurrenceCellRange = [];
+            let impactCellRange = [];
+            let startRowIndex;
+            let endRowIndex;
+            for (let i = 1; i <= numRounds; i++) {
+                occurrenceCellRange = document.getElementById(`round${i}OccurRange`).value.split(':');
+                console.log(`occurrenceCellRange=${occurrenceCellRange}`);
+                startRowIndex = occurrenceCellRange[0].search(/\d/);
+                endRowIndex = occurrenceCellRange[1].search(/\d/);
+                occurrenceCells.cellColByRound.push(occurrenceCellRange[0].substring(0, startRowIndex).toUpperCase());
+                occurrenceCells.cellRowStartByRound.push(Number(occurrenceCellRange[0].substring(startRowIndex)));
+                occurrenceCells.cellRowEndByRound.push(Number(occurrenceCellRange[1].substring(endRowIndex)));
+
+                impactCellRange = document.getElementById(`round${i}ImpactRange`).value.split(':');
+                console.log(`impactCellRange=${impactCellRange}`);
+                startRowIndex = impactCellRange[0].search(/\d/);
+                endRowIndex = impactCellRange[1].search(/\d/);
+                impactCells.cellColByRound.push(impactCellRange[0].substring(0, startRowIndex).toUpperCase());
+                impactCells.cellRowStartByRound.push(Number(impactCellRange[0].substring(startRowIndex)));
+                impactCells.cellRowEndByRound.push(Number(impactCellRange[1].substring(endRowIndex)));
+            }
+            console.log(occurrenceCells);
+            console.log(impactCells);
+
+            // Get the cell where the user indicated the causal certainty can be found in the spreadsheet
+            // & the number of answer options available
+            const causalCertaintyCell = document.getElementById('causalCertaintyCell').value;
+            const causalCertaintyRowIndex = causalCertaintyCell.search(/\d/);
+            const causalCertaintyCol = causalCertaintyCell.substring(0, causalCertaintyRowIndex);
+            const causalCertaintyRow = Number(causalCertaintyCell.substring(causalCertaintyRowIndex));
+            const causalCertaintyAnsOptions = document.getElementById('causalCertaintyAnsOptions').value.split(',');
+
+            // Get the range of cells where the user indicated the occurrence timeframe values can be found in the spreadsheet
+            const occurrenceTimeframeCellRange = document.getElementById('occTimeframeRange').value.split(':');
+            console.log(occurrenceTimeframeCellRange);
+            const occurrenceTimeframeRowStartIndex = occurrenceTimeframeCellRange[0].search(/\d/);
+            const occurrenceTimeframeRowEndIndex = occurrenceTimeframeCellRange[1].search(/\d/);
+            const occurrenceTimeframeCol = occurrenceTimeframeCellRange[0].substring(0, occurrenceTimeframeRowStartIndex);
+            const occurrenceTimeframeRowStart = Number(occurrenceTimeframeCellRange[0].substring(occurrenceTimeframeRowStartIndex));
+            const occurrenceTimeframeRowEnd = Number(occurrenceTimeframeCellRange[1].substring(occurrenceTimeframeRowEndIndex));
+
+            // Get the cell where the user indicated the threat frequency can be found in the spreadsheet
+            // & the number of answer options available
+            const threatFreqCell = document.getElementById('threatFreqCell').value;
+            const threatFreqRowIndex = threatFreqCell.search(/\d/);
+            const threatFreqCol = threatFreqCell.substring(0, threatFreqRowIndex);
+            const threatFreqRow = Number(threatFreqCell.substring(threatFreqRowIndex));
+            const threatFreqAnsOptions = document.getElementById('threatFreqAnsOptions').value.split(',');
+
+            // Get the cell where the user indicated the threat extent can be found in the spreadsheet
+            // & the number of answer options available
+            const threatExtentCell = document.getElementById('threatExtentCell').value;
+            const threatExtentRowIndex = threatExtentCell.search(/\d/);
+            const threatExtentCol = threatExtentCell.substring(0, threatExtentRowIndex);
+            const threatExtentRow = Number(threatExtentCell.substring(threatExtentRowIndex));
+            const threatExtentAnsOptions = document.getElementById('threatExtentAnsOptions').value.split(',');
+
+            // Stores the output generated separated by column
+            let columns = [];
+            // Stores the IDs of the <pre> tags that hold the text for each column
+            let columnTextIds = [];
+            // Stores the actual HTML <button> tags
+            let buttonsHtml = '';
+
+            for (let i = 1; i <= numThreats; i++) {
+                // Add the name column to the list of column outputs and to the list of copy buttons
+                columns.push('');
+                buttonsHtml = `${buttonsHtml}<h3>THREAT ${i}</h3><br /><div class="button-container">`;
+                buttonsHtml = `${buttonsHtml}<button onclick="copyCol('nameColT${i}')">Copy Name Column</button>`;
+                columnTextIds.push(`nameColT${i}`);
+                
+                for (let j = 0; j < numRounds; j++) {
+                    console.log(`occurrenceStart=${occurrenceCells.cellRowStartByRound[j]} occurrenceEnd=${occurrenceCells.cellRowEndByRound[j]}`);
+                    // Add the likelihood of occurrence columns to the list of column outputs and to the list of copy buttons
+                    for (let k = occurrenceCells.cellRowStartByRound[j]; k <= occurrenceCells.cellRowEndByRound[j]; k++) {
+                        columns.push('');
+                        const colLogicalNum = k - occurrenceCells.cellRowStartByRound[j] + 1;
+                        buttonsHtml = `${buttonsHtml}<button onclick="copyCol('occurCol${colLogicalNum}T${i}R${j + 1}')">Copy R${j + 1} Occurrence Column ${colLogicalNum}</button>`;
+                        columnTextIds.push(`occurCol${colLogicalNum}T${i}R${j + 1}`);
+                    }
+                    console.log(`occurrenceStart=${impactCells.cellRowStartByRound[j]} occurrenceEnd=${impactCells.cellRowEndByRound[j]}`);
+                    // Add the level of impact columns to the list of column outputs and to the list of copy buttons
+                    for (let k = impactCells.cellRowStartByRound[j]; k <= impactCells.cellRowEndByRound[j]; k++) {
+                        columns.push('');
+                        const colLogicalNum = k - impactCells.cellRowStartByRound[j] + 1;
+                        buttonsHtml = `${buttonsHtml}<button onclick="copyCol('impactCol${colLogicalNum}T${i}R${j + 1}')">Copy R${j + 1} Impact Column ${colLogicalNum}</button>`;
+                        columnTextIds.push(`impactCol${colLogicalNum}T${i}R${j + 1}`);
+                    }
+                }
+
+                // Add the causal certainty columns to the list of column outputs and to the list of copy buttons
+                for (let j = 0; j < causalCertaintyAnsOptions.length; j++) {
+                    columns.push('');
+                    const colLogicalNum = j + 1;
+                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('causCertCol${colLogicalNum}T${i}')">Copy Causal Certainty Column ${colLogicalNum}</button>`;
+                    columnTextIds.push(`causCertCol${colLogicalNum}T${i}`);
+                }
+
+                for (let j = occurrenceTimeframeRowStart; j <= occurrenceTimeframeRowEnd; j++) {
+                    columns.push('');
+                    const colLogicalNum = j - occurrenceTimeframeRowStart + 1;
+                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('occurTimeframeCol${colLogicalNum}T${i}')">Copy Occurrence Timeframe Column ${colLogicalNum}</button>`;
+                    columnTextIds.push(`occurTimeframeCol${colLogicalNum}T${i}`);
+                }
+
+                // Add the threat frequency columns to the list of column outputs and to the list of copy buttons
+                for (let j = 0; j < threatFreqAnsOptions.length; j++) {
+                    columns.push('');
+                    const colLogicalNum = j + 1;
+                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('threatFreqCol${colLogicalNum}T${i}')">Copy Threat Frequency Column ${colLogicalNum}</button>`;
+                    columnTextIds.push(`threatFreqCol${colLogicalNum}T${i}`);
+                }
+
+                // Add the threat extent columns to the list of column outputs and to the list of copy buttons
+                for (let j = 0; j < threatExtentAnsOptions.length; j++) {
+                    columns.push('');
+                    const colLogicalNum = j + 1;
+                    buttonsHtml = `${buttonsHtml}<button onclick="copyCol('threatExtCol${colLogicalNum}T${i}')">Copy Threat Extent Column ${colLogicalNum}</button>`;
+                    columnTextIds.push(`threatExtCol${colLogicalNum}T${i}`);
+                }
+                buttonsHtml = `${buttonsHtml}</div>`;
+            }
+            console.log(columnTextIds);
+            console.log(`columnTextIds length = ${columnTextIds.length}`);
+
+            // Put the list of HTML <button> tags into the DOM using the buttonContainer <div>
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = buttonsHtml;
+
+            let sheetTab = '';
+            let colIndex = 0;
+            let colPerThreat = 0;
+            const numColumns = columnTextIds.length;
+            for (let i = 1; i <= numThreats; i++) {
+                sheetTab = `Threat ${i}`;
+                const startColIndex = (i - 1) * colPerThreat;
+                console.log(`At loop i=${i}, colIndex=${colIndex}`);
+                for (let j = 0; j < urlArray.length; j++) {
+                    colIndex = startColIndex;
+                    columns[colIndex] = `${columns[colIndex]}=IMPORTRANGE("${urlArray[j]}","'${sheetTab}'!${nameCell}")\n`;
+                    colIndex++;
+
+                    // Add the likelihood of occurrence columns to the list of column outputs and to the list of copy buttons
+                    for (let k = 0; k < numRounds; k++) {
+                        for (let l = occurrenceCells.cellRowStartByRound[k]; l <= occurrenceCells.cellRowEndByRound[k]; l++) {
+                            columns[colIndex] = `${columns[colIndex]}=IMPORTRANGE("${urlArray[j]}","'${sheetTab}'!${occurrenceCells.cellColByRound[k]}${l}")\n`;
+                            colIndex++;
+                        }
+                        for (let l = impactCells.cellRowStartByRound[k]; l <= impactCells.cellRowEndByRound[k]; l++) {
+                            columns[colIndex] = `${columns[colIndex]}=IMPORTRANGE("${urlArray[j]}","'${sheetTab}'!${impactCells.cellColByRound[k]}${l}")\n`;
+                            colIndex++;
+                        }
+                    }
+
+                    // Add the causal certainty columns to the list of column outputs and to the list of copy buttons
+                    for (let k = 0; k < causalCertaintyAnsOptions.length; k++) {
+                        columns[colIndex] = `${columns[colIndex]}=IF(IMPORTRANGE("${urlArray[j]}","'${sheetTab}'!${causalCertaintyCol}${causalCertaintyRow}")="${causalCertaintyAnsOptions[k].trim()}",1,"")\n`;
+                        colIndex++;
+                    }
+
+                    for (let k = occurrenceTimeframeRowStart; k <= occurrenceTimeframeRowEnd; k++) {
+                        columns[colIndex] = `${columns[colIndex]}=IF(IMPORTRANGE("${urlArray[j]}","'${sheetTab}'!${occurrenceTimeframeCol}${k}")=TRUE,1,"")\n`;
+                        colIndex++;
+                    }
+
+                    // Add the threat frequency columns to the list of column outputs and to the list of copy buttons
+                    for (let k = 0; k < threatFreqAnsOptions.length; k++) {
+                        columns[colIndex] = `${columns[colIndex]}=IF(IMPORTRANGE("${urlArray[j]}","'${sheetTab}'!${threatFreqCol}${threatFreqRow}")="${threatFreqAnsOptions[k].trim()}",1,"")\n`;
+                        colIndex++;
+                    }
+
+                    // Add the threat extent columns to the list of column outputs and to the list of copy buttons
+                    for (let k = 0; k < threatExtentAnsOptions.length; k++) {
+                        columns[colIndex] = `${columns[colIndex]}=IF(IMPORTRANGE("${urlArray[j]}","'${sheetTab}'!${threatExtentCol}${threatExtentRow}")="${threatExtentAnsOptions[k].trim()}",1,"")\n`;
+                        colIndex++;
+                    }
+                    if (i === 1 && j === 0) {
+                        colPerThreat = colIndex;
+                    }
+                }
+            }
+
+            // Consolidate all the column outputs into one string of HTML
+            let colOutputHtml = '';
+            colIndex = 0;
+            for (let i = 1; i <= numThreats; i++) {
+                colOutputHtml = `${colOutputHtml}<h2>THREAT ${i}<h2/><br />`;
+                colOutputHtml = `${colOutputHtml}${buildOutputContainer(`nameColT${i}`, columns[colIndex], `Name Column`)}`;
+                colIndex++;
+
+                for (let j = 0; j < numRounds; j++) {
+                    for (let k = occurrenceCells.cellRowStartByRound[j]; k <= occurrenceCells.cellRowEndByRound[j]; k++) {
+                        const colLogicalNum = k - occurrenceCells.cellRowStartByRound[j] + 1;
+                        colOutputHtml = `${colOutputHtml}${buildOutputContainer(`occurCol${colLogicalNum}T${i}R${j + 1}`, columns[colIndex], `Round ${j + 1} Occurrence Column ${colLogicalNum}`)}`;
+                        colIndex++;
+                    }
+                    for (let k = impactCells.cellRowStartByRound[j]; k <= impactCells.cellRowEndByRound[j]; k++) {
+                        const colLogicalNum = k - impactCells.cellRowStartByRound[j] + 1;
+                        colOutputHtml = `${colOutputHtml}${buildOutputContainer(`impactCol${colLogicalNum}T${i}R${j + 1}`, columns[colIndex], `Round ${j + 1} Impact Column ${colLogicalNum}`)}`;
+                        colIndex++;
+                    }
+                }
+
+                // Add the causal certainty columns to the list of column outputs and to the list of copy buttons
+                for (let j = 1; j <= causalCertaintyAnsOptions.length; j++) {
+                    colOutputHtml = `${colOutputHtml}${buildOutputContainer(`causCertCol${j}T${i}`, columns[colIndex], `Causal Certainty Column ${j}`)}`;
+                    colIndex++;
+                }
+
+                for (let j = occurrenceTimeframeRowStart; j <= occurrenceTimeframeRowEnd; j++) {
+                    const colLogicalNum = j - occurrenceTimeframeRowStart + 1;
+                    colOutputHtml = `${colOutputHtml}${buildOutputContainer(`occurTimeframeCol${colLogicalNum}T${i}`, columns[colIndex], `Occurrence Timeframe Column ${colLogicalNum}`)}`;
+                    colIndex++;
+                }
+
+                // Add the threat frequency columns to the list of column outputs and to the list of copy buttons
+                for (let j = 1; j <= threatFreqAnsOptions.length; j++) {
+                    colOutputHtml = `${colOutputHtml}${buildOutputContainer(`threatFreqCol${j}T${i}`, columns[colIndex], `Threat Frequency Column ${j}`)}`;
+                    colIndex++;
+                }
+
+                // Add the threat extent columns to the list of column outputs and to the list of copy buttons
+                for (let j = 1; j <= threatExtentAnsOptions.length; j++) {
+                    colOutputHtml = `${colOutputHtml}${buildOutputContainer(`threatExtCol${j}T${i}`, columns[colIndex], `Threat Extent Column ${j}`)}`;
+                    colIndex++;
+                }
+            }
+
+            // Put the column outputs into the DOM using the outputContainer <div>
+            const outputContainer = document.getElementById('outputContainer');
+            outputContainer.innerHTML = colOutputHtml;
+        }
+
+        // Prepare the HTML header and text for a column
+        function buildOutputContainer(colTextId, colText, colTitle) {
+            return `<h3>${colTitle}</h3><div class="output-container">`
+                + `<pre id="${colTextId}">${colText}</pre></div><br /><br />`;
+        }
+
+        // Clear any elements inside the outputContainer and buttonContainer in the DOM
+        function clearContainers() {
+            const outputContainer = document.getElementById('outputContainer');
+            outputContainer.innerHTML = '';
+            const buttonContainer = document.getElementById('buttonContainer');
+            buttonContainer.innerHTML = '';
+        }
+
+        // Copy the text in the column that matches the passed colId to the user's clipboard
+        const copyCol = async (colId) => {
+            try {
+                const column = document.getElementById(colId);
+                await navigator.clipboard.writeText(column.innerText);
+                // alert(`Column ${colId} successfully copied to clipboard! :)`);
+                console.log(`Column ${colId} successfully copied to clipboard! :)`);
+            } catch (err) {
+                alert('Copy failed! :(')
+                console.error(`Failed to copy for colId=${colId}: `, err);
+            }
+        }
+
+        function isEmpty(val) {
+            return val.trim() === '';
+        }
+
+        function verifyNotEmpty(value, inputId) {
+            console.log(incompleteFields);
+            let errorContainer = document.getElementById(errorIds.get(inputId));
+            let input = document.getElementById(inputId);
+            let generateButton = document.getElementById('button-container');
+            if (isEmpty(value)) {
+                errorContainer.innerHTML = `<span class="dot"></span><span class="cross">x</span>&nbsp;&nbsp;<strong tabindex="0" class="error">${errorMsgs.get(inputId)}</strong>`;
+                input.setAttribute('class', 'invalid');
+                incompleteFields.set(inputId, 'error');
+                generateButton.innerHTML = '';
+            } else {
+                errorContainer.innerHTML = '';
+                input.setAttribute('class', '');
+                incompleteFields.delete(inputId);
+                if (incompleteFields.size === 0) {
+                    generateButton.innerHTML = `<button onclick="generate()">Generate Spreadsheet Formulas</button>`;
+                }
+            }
+        }
+
+        function showRounds(value, inputId) {
+            verifyNotEmpty(value, inputId);
+            if (!isEmpty(value)) {
+                numberOfRounds = Number(value);
+                let roundsHtml = '';
+                for (let i = 1; i <= numberOfRounds; i++) {
+                    roundsHtml += `
+                        <div class="input-container">
+                            <label for="round${i}OccurRange"><strong>Round ${i} Occurrence Data Range</strong></label>
+                            <span class="input-desc">Enter the range of cells for the likelihood of occurrence data for round ${i} begins (e.g., J6:J12).</span>
+                            <div id="round${i}OccurRange-error-container" class="error-container"></div>
+                            <input id="round${i}OccurRange" name="Cell range of round ${i} occurrence data" onfocusout="verifyNotEmpty(value, 'round${i}OccurRange')" />
+                        </div>
+                        <div class="input-container">
+                            <label for="round${i}ImpactRange"><strong>Round ${i} Impact Data Range</strong></label>
+                            <span class="input-desc">Enter the range of cells for the level of impact data for round ${i} (e.g., J13:J17).</span>
+                            <div id="round${i}ImpactRange-error-container" class="error-container"></div>
+                            <input id="round${i}ImpactRange" name="Cell range of round ${i} impact data" onfocusout="verifyNotEmpty(value, 'round${i}ImpactRange')" />
+                        </div>
+                    `;
+                    addOccurAndImpactFieldsToErrorMapsForRound(i);
+                }
+                document.getElementById('roundsDataContainer').innerHTML = roundsHtml;
+            }
+        }
+
+        function addOccurAndImpactFieldsToErrorMapsForRound(roundNum) {
+            errorIds.set(`round${roundNum}OccurRange`, `round${roundNum}OccurRange-error-container`);
+            errorMsgs.set(`round${roundNum}OccurRange`, `Please enter the round ${roundNum} occurrence data range`);
+            incompleteFields.set(`round${roundNum}OccurRange`, 'untouched');
+
+            errorIds.set(`round${roundNum}ImpactRange`, `round${roundNum}ImpactRange-error-container`);
+            errorMsgs.set(`round${roundNum}ImpactRange`, `Please enter the round ${roundNum} impact data range`);
+            incompleteFields.set(`round${roundNum}ImpactRange`, 'untouched');
+        }
+
+        function getColumnNum(columnLetterCombo) {
+            let num = 0;
+            let exponent = columnLetterCombo.length - 1;
+            for (let i = 0; i < columnLetterCombo.length; i++) {
+                num += (columnLetterCombo.charCodeAt(i) - 64) * (26 ** exponent);
+                console.log(`columnLetterCombo=${columnLetterCombo} & num=${num}`);
+                exponent -= 1;
+            }
+            return num;
+        }
+
+        function fillErrorIds() {
+            errorIds.set('urls', 'url-error-container');
+            errorIds.set('threats', 'threats-error-container');
+            errorIds.set('nameCell', 'nameCell-error-container');
+            errorIds.set('rounds', 'rounds-error-container');
+            errorIds.set('causalCertaintyCell', 'causalCertaintyCell-error-container');
+            errorIds.set('causalCertaintyAnsOptions', 'causalCertaintyAnsOptions-error-container');
+            errorIds.set('occTimeframeRange', 'occTimeframeRange-error-container');
+            errorIds.set('threatFreqCell', 'threatFreqCell-error-container');
+            errorIds.set('threatFreqAnsOptions', 'threatFreqAnsOptions-error-container');
+            errorIds.set('threatExtentCell', 'threatExtentCell-error-container');
+            errorIds.set('threatExtentAnsOptions', 'threatExtentAnsOptions-error-container');
+        }
+
+        function fillErrorMsgs() {
+            errorMsgs.set('urls', 'Please enter spreadsheet URLs');
+            errorMsgs.set('threats', 'Please enter the number of threats');
+            errorMsgs.set('nameCell', 'Please enter the name cell');
+            errorMsgs.set('rounds', 'Please enter the number of rounds');
+            errorMsgs.set('causalCertaintyCell', 'Please enter the causal certainty cell');
+            errorMsgs.set('causalCertaintyAnsOptions', 'Please enter the answer options for causal certainty');
+            errorMsgs.set('occTimeframeRange', 'Please enter the occurrence timeframe cell');
+            errorMsgs.set('threatFreqCell', 'Please enter the threat frequency cell');
+            errorMsgs.set('threatFreqAnsOptions', 'Please enter the answer options for threat frequency');
+            errorMsgs.set('threatExtentCell', 'Please enter the threat extent cell');
+            errorMsgs.set('threatExtentAnsOptions', 'Please enter the answer options for the threat extent');
+        }
+
+        function fillIncompleteFields() {
+            incompleteFields.set('urls', 'untouched');
+            incompleteFields.set('threats', 'untouched');
+            incompleteFields.set('nameCell', 'untouched');
+            incompleteFields.set('rounds', 'untouched');
+            incompleteFields.set('causalCertaintyCell', 'untouched');
+            incompleteFields.set('causalCertaintyAnsOptions', 'untouched');
+            incompleteFields.set('occTimeframeRange', 'untouched');
+            incompleteFields.set('threatFreqCell', 'untouched');
+            incompleteFields.set('threatFreqAnsOptions', 'untouched');
+            incompleteFields.set('threatExtentCell', 'untouched');
+            incompleteFields.set('threatExtentAnsOptions', 'untouched');
+        }
+    </script>
+</html>
